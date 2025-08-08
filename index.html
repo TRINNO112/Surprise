@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Invitation</title>
+
+  <!-- Local BloodCrow font -->
+  <style>
+    @font-face {
+      font-family: 'BloodCrow';
+      src: url('fonts/BloodCrow.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      margin: 0;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Floating shapes for background */
+    .shape {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      animation: floatShape 10s infinite ease-in-out;
+      z-index: 1;
+    }
+
+    .intro-screen {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Japanese Text */
+    .main-text {
+      font-family: 'BloodCrow', sans-serif;
+      font-size: 3.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid rgba(255,255,255,0.75);
+      width: 0;
+      opacity: 1;
+      letter-spacing: 4px; /* more spacing between characters */
+      animation: typingJP 5.5s steps(25) forwards, blink 0.75s step-end infinite;
+    }
+
+    /* English Text (hidden initially) */
+    .main-text-english {
+      font-family: 'BloodCrow', sans-serif;
+      font-size: 3.5rem;
+      opacity: 0;
+      transition: opacity 1s ease;
+      letter-spacing: 2px;
+    }
+
+    /* Fade-out class */
+    .fade-out {
+      opacity: 0 !important;
+      transition: opacity 1s ease;
+    }
+
+    .sub-text {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    /* Button */
+    .modern-btn {
+      margin-top: 20px;
+      padding: 14px 28px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #ff512f, #dd2476);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+      animation: pulse 1.5s infinite;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .modern-btn.show-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modern-btn:hover {
+      transform: scale(1.05);
+    }
+
+    @keyframes typingJP {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes floatShape {
+      0% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+      100% { transform: translateY(0) rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating shapes -->
+  <div class="shape" style="width:80px; height:80px; top:10%; left:5%; animation-duration: 8s;"></div>
+  <div class="shape" style="width:50px; height:50px; top:20%; left:80%; animation-duration: 12s;"></div>
+  <div class="shape" style="width:100px; height:100px; top:70%; left:15%; animation-duration: 15s;"></div>
+  <div class="shape" style="width:60px; height:60px; top:50%; left:60%; animation-duration: 10s;"></div>
+
+  <!-- Main Invitation -->
+  <div class="intro-screen">
+    <h2 id="jp-text" class="main-text">あなたは招待されました...</h2> <!-- Japanese: "You’ve been invited..." -->
+    <h2 id="en-text" class="main-text-english">🎁 You’ve Been Invited...</h2>
+    <p id="sub-text" class="sub-text">A very special surprise is waiting for you</p>
+    <button id="open-btn" class="modern-btn">Open Invitation</button>
+  </div>
+
+  <script>
+    // Fade out JP and fade in EN
+    setTimeout(() => {
+      document.getElementById("jp-text").classList.add("fade-out");
+      setTimeout(() => {
+        document.getElementById("jp-text").style.display = "none";
+        document.getElementById("en-text").style.opacity = "1";
+        document.getElementById("sub-text").style.opacity = "1";
+      }, 1000); // matches fade duration
+    }, 5500); // 5.5s typing duration
+
+    // Show button after EN text appears
+    setTimeout(() => {
+      document.getElementById("open-btn").classList.add("show-btn");
+    }, 6500);
+
+    // Button click action
+    document.getElementById("open-btn").addEventListener("click", function(){
+      window.location.href = "loading.html";
+    });
+  </script>
+</body>
+</html>

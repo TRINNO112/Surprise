@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Puzzle Challenge</title>
+    <style>
+        @font-face {
+            font-family: 'BloodCrow';
+            src: url('fonts/BloodCrow.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Kareudon';
+            src: url('fonts/Kareudon-lg0Ad.otf') format('opentype');
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #1a1a2e, #16213e);
+            font-family: 'Kareudon', sans-serif;
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-family: 'BloodCrow', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(255, 105, 180, 0.7); }
+            to { text-shadow: 0 0 20px rgba(255, 105, 180, 0.9), 0 0 30px rgba(255, 192, 203, 0.5); }
+        }
+
+        .character-select {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .character-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .character-option:hover {
+            transform: scale(1.05);
+            border-color: white;
+        }
+
+        .character-option.selected {
+            border-color: #ff512f;
+            box-shadow: 0 0 15px #ff512f;
+        }
+
+        .character-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .difficulty-select {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .difficulty-btn.selected {
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            font-weight: bold;
+        }
+
+        .puzzle-container {
+            position: relative;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+        }
+
+        .puzzle-board {
+            display: grid;
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .puzzle-piece {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .puzzle-piece.empty {
+            background: transparent;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .puzzle-piece.moving {
+            z-index: 10;
+            transform: scale(1.03);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px auto;
+            max-width: 500px;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: 'Kareudon', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .victory-screen.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .victory-message {
+            font-family: 'BloodCrow', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(90deg, #ff0055, #ffcc00, #00ffcc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .character-quote {
+            font-style: italic;
+            margin-bottom: 20px;
+            max-width: 80%;
+        }
+
+        .sakura {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: pink;
+            border-radius: 50% 0 50% 50%;
+            opacity: 0.8;
+            z-index: 1;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .puzzle-board {
+                height: 400px;
+            }
+            
+            .character-option {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sakura petals container -->
+    <div id="sakura-container"></div>
+
+    <div class="container">
+        <h1>⚔️ Anime Puzzle Challenge 🎋</h1>
+        
+        <!-- Character Selection -->
+        <div class="character-select" id="character-select">
+            <!-- Demon Slayer Characters -->
+            <div class="character-option" data-character="tanjiro">
+                <img src="images/Tanjiro.jpeg" alt="Tanjiro Kamado">
+            </div>
+            <div class="character-option" data-character="nezuko">
+                <img src="images/Nezuko.jpeg" alt="Nezuko Kamado">
+            </div>
+            <div class="character-option" data-character="zenitsu">
+                <img src="images/Zenitsu.jpeg" alt="Zenitsu Agatsuma">
+            </div>
+            <div class="character-option" data-character="inosuke">
+                <img src="images/Inosuke.jpeg" alt="Inosuke Hashibira">
+            </div>
+            
+            <!-- Bungo Stray Dogs Characters -->
+            <div class="character-option" data-character="atsushi">
+                <img src="images/Atsushi.jpeg" alt="Atsushi Nakajima">
+            </div>
+            <div class="character-option" data-character="dazai">
+                <img src="images/Dazai.jpeg" alt="Osamu Dazai">
+            </div>
+            <div class="character-option" data-character="akutagawa">
+                <img src="images/Akutagawa.jpeg" alt="Ryūnosuke Akutagawa">
+            </div>
+            <div class="character-option" data-character="chuuya">
+                <img src="images/Chuuya.jpeg" alt="Chūya Nakahara">
+            </div>
+        </div>
+        
+        <!-- Difficulty Selection -->
+        <div class="difficulty-select">
+            <button class="difficulty-btn selected" data-difficulty="3">Easy (3×3)</button>
+            <button class="difficulty-btn" data-difficulty="4">Medium (4×4)</button>
+            <button class="difficulty-btn" data-difficulty="5">Hard (5×5)</button>
+        </div>
+        
+        <!-- Puzzle Area -->
+        <div class="puzzle-container">
+            <div class="puzzle-board" id="puzzle-board"></div>
+        </div>
+        
+        <!-- Game Info -->
+        <div class="game-info">
+            <div>Moves: <span id="move-count">0</span></div>
+            <div>Time: <span id="time">00:00</span></div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <button id="preview-btn">Preview Image</button>
+            <button id="shuffle-btn">Shuffle</button>
+            <button id="reset-btn">Reset</button>
+            <button id="main-menu-btn">Main Menu</button>
+        </div>
+    </div>
+    
+    <!-- Victory Screen -->
+    <div class="victory-screen" id="victory-screen">
+        <div class="victory-message">Mission Complete!</div>
+        <div class="character-quote" id="character-quote"></div>
+        <div>You solved it in <span id="final-moves">0</span> moves!</div>
+        <div>Time: <span id="final-time">00:00</span></div>
+        <button id="play-again-btn">Play Again</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        // Game Data
+        const characters = {
+            tanjiro: {
+                name: "Tanjiro Kamado",
+                quote: "No matter how many people you may lose, you have no choice but to go on living.",
+                image: "images/Tanjiro.jpeg"
+            },
+            nezuko: {
+                name: "Nezuko Kamado",
+                quote: "Even if I'm scared, I'll keep moving forward to protect everyone!",
+                image: "images/Nezuko.jpeg"
+            },
+            zenitsu: {
+                name: "Zenitsu Agatsuma",
+                quote: "I'm scared, but I'll still fight because it's the right thing to do!",
+                image: "images/Zenitsu.jpeg"
+            },
+            inosuke: {
+                name: "Inosuke Hashibira",
+                quote: "I'm the king of the mountains! Fear is for the weak!",
+                image: "images/Inosuke.jpeg"
+            },
+            atsushi: {
+                name: "Atsushi Nakajima",
+                quote: "Even if I'm a tiger, I want to live in a way that helps people.",
+                image: "images/Atsushi.jpeg"
+            },
+            dazai: {
+                name: "Osamu Dazai",
+                quote: "There's value in meaningless things, and meaning in worthless things.",
+                image: "'images/Dazai.jpeg"
+            },
+            akutagawa: {
+                name: "Ryūnosuke Akutagawa",
+                quote: "Strength isn't about winning, it's about not losing what's important.",
+                image: "images/Akutagawa.jpeg"
+            },
+            chuuya: {
+                name: "Chūya Nakahara",
+                quote: "I'll crush anyone who gets in my way, that's just how I roll!",
+                image: "images/Chuuya.jpeg"
+            }
+        };
+
+        // Game State
+        let selectedCharacter = "tanjiro";
+        let difficulty = 3;
+        let board = [];
+        let emptyPos = { row: 0, col: 0 };
+        let moveCount = 0;
+        let startTime = 0;
+        let timerInterval = null;
+        let isPreviewing = false;
+        let isAnimating = false;
+
+        // DOM Elements
+        const puzzleBoard = document.getElementById('puzzle-board');
+        const moveCountElement = document.getElementById('move-count');
+        const timeElement = document.getElementById('time');
+        const victoryScreen = document.getElementById('victory-screen');
+        const characterQuote = document.getElementById('character-quote');
+        const finalMoves = document.getElementById('final-moves');
+        const finalTime = document.getElementById('final-time');
+        const sakuraContainer = document.getElementById('sakura-container');
+
+        // Initialize Game
+        function initGame() {
+            // Clear previous game
+            clearInterval(timerInterval);
+            moveCount = 0;
+            moveCountElement.textContent = "0";
+            timeElement.textContent = "00:00";
+            
+            // Set up board
+            createBoard();
+            renderBoard();
+            startTimer();
+        }
+
+        // Create puzzle board
+        function createBoard() {
+            board = [];
+            puzzleBoard.innerHTML = '';
+            puzzleBoard.style.gridTemplateColumns = `repeat(${difficulty}, 1fr)`;
+            puzzleBoard.style.gridTemplateRows = `repeat(${difficulty}, 1fr)`;
+            
+            // Create solved board
+            for (let row = 0; row < difficulty; row++) {
+                board[row] = [];
+                for (let col = 0; col < difficulty; col++) {
+                    // Last piece is empty
+                    if (row === difficulty - 1 && col === difficulty - 1) {
+                        board[row][col] = { row, col, empty: true };
+                        emptyPos = { row, col };
+                    } else {
+                        const pieceNum = row * difficulty + col;
+                        board[row][col] = { row, col, pieceNum };
+                    }
+                }
+            }
+            
+            // Shuffle the board
+            shuffleBoard();
+        }
+
+        // Render puzzle board
+        function renderBoard() {
+            puzzleBoard.innerHTML = '';
+            
+            for (let row = 0; row < difficulty; row++) {
+                for (let col = 0; col < difficulty; col++) {
+                    const piece = board[row][col];
+                    const pieceElement = document.createElement('div');
+                    
+                    if (piece.empty) {
+                        pieceElement.className = 'puzzle-piece empty';
+                    } else {
+                        pieceElement.className = 'puzzle-piece';
+                        if (isPreviewing) {
+                            // Show full image in preview mode
+                            pieceElement.style.backgroundImage = `url(${characters[selectedCharacter].image})`;
+                            pieceElement.style.backgroundPosition = 'center';
+                            pieceElement.style.backgroundSize = 'cover';
+                        } else {
+                            // Show individual piece in game mode
+                            const size = 100 / (difficulty - 1);
+                            const xPos = (piece.pieceNum % difficulty) * size;
+                            const yPos = Math.floor(piece.pieceNum / difficulty) * size;
+                            pieceElement.style.backgroundImage = `url(${characters[selectedCharacter].image})`;
+                            pieceElement.style.backgroundPosition = `-${xPos}% -${yPos}%`;
+                            pieceElement.style.backgroundSize = `${difficulty * 100}%`;
+                        }
+                    }
+                    
+                    pieceElement.dataset.row = row;
+                    pieceElement.dataset.col = col;
+                    pieceElement.addEventListener('click', () => movePiece(row, col));
+                    puzzleBoard.appendChild(pieceElement);
+                }
+            }
+        }
+
+        // Shuffle the board
+        function shuffleBoard() {
+            // Perform many random moves to shuffle
+            const shuffleMoves = difficulty * difficulty * 20;
+            let lastMove = null;
+            
+            for (let i = 0; i < shuffleMoves; i++) {
+                const directions = [];
+                if (emptyPos.row > 0) directions.push('up');
+                if (emptyPos.row < difficulty - 1) directions.push('down');
+                if (emptyPos.col > 0) directions.push('left');
+                if (emptyPos.col < difficulty - 1) directions.push('right');
+                
+                // Filter out the reverse of last move to prevent undo
+                const validDirections = directions.filter(dir => {
+                    if (!lastMove) return true;
+                    return !(
+                        (lastMove === 'up' && dir === 'down') ||
+                        (lastMove === 'down' && dir === 'up') ||
+                        (lastMove === 'left' && dir === 'right') ||
+                        (lastMove === 'right' && dir === 'left')
+                    );
+                });
+                
+                if (validDirections.length > 0) {
+                    const randomDir = validDirections[Math.floor(Math.random() * validDirections.length)];
+                    lastMove = randomDir;
+                    
+                    switch (randomDir) {
+                        case 'up':
+                            swapPieces(emptyPos.row - 1, emptyPos.col);
+                            break;
+                        case 'down':
+                            swapPieces(emptyPos.row + 1, emptyPos.col);
+                            break;
+                        case 'left':
+                            swapPieces(emptyPos.row, emptyPos.col - 1);
+                            break;
+                        case 'right':
+                            swapPieces(emptyPos.row, emptyPos.col + 1);
+                            break;
+                    }
+                }
+            }
+            
+            // Reset move count after shuffle
+            moveCount = 0;
+            moveCountElement.textContent = "0";
+        }
+
+        // Move a piece
+        function movePiece(row, col) {
+            if (isAnimating || isPreviewing) return;
+            
+            // Check if piece is adjacent to empty space
+            if (
+                (Math.abs(row - emptyPos.row) === 1 && col === emptyPos.col) ||
+                (Math.abs(col - emptyPos.col) === 1 && row === emptyPos.row)
+            ) {
+                swapPieces(row, col);
+                moveCount++;
+                moveCountElement.textContent = moveCount;
+                
+                // Check if puzzle is solved
+                if (checkSolved()) {
+                    clearInterval(timerInterval);
+                    showVictory();
+                }
+            }
+        }
+
+        // Swap pieces
+        function swapPieces(row, col) {
+            isAnimating = true;
+            
+            // Update board state
+            const temp = board[row][col];
+            board[row][col] = board[emptyPos.row][emptyPos.col];
+            board[emptyPos.row][emptyPos.col] = temp;
+            
+            // Update empty position
+            emptyPos = { row, col };
+            
+            // Animate the swap
+            renderBoard();
+            setTimeout(() => {
+                isAnimating = false;
+            }, 200);
+        }
+
+        // Check if puzzle is solved
+        function checkSolved() {
+            for (let row = 0; row < difficulty; row++) {
+                for (let col = 0; col < difficulty; col++) {
+                    const piece = board[row][col];
+                    if (!piece.empty) {
+                        const expectedRow = Math.floor(piece.pieceNum / difficulty);
+                        const expectedCol = piece.pieceNum % difficulty;
+                        if (row !== expectedRow || col !== expectedCol) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Start timer
+        function startTimer() {
+            startTime = Date.now();
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                timeElement.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        // Show victory screen
+        function showVictory() {
+            // Set victory message
+            characterQuote.textContent = `"${characters[selectedCharacter].quote}" - ${characters[selectedCharacter].name}`;
+            finalMoves.textContent = moveCount;
+            finalTime.textContent = timeElement.textContent;
+            
+            // Show victory screen
+            victoryScreen.classList.add('show');
+            
+            // Celebration!
+            createConfetti();
+            createSakuraStorm();
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#ff5e5e', '#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'];
+            
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: colors
+            });
+        }
+
+        // Create sakura storm
+        function createSakuraStorm() {
+            for (let i = 0; i < 30; i++) {
+                setTimeout(createSakura, i * 100);
+            }
+        }
+
+        // Create sakura petals
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.classList.add('sakura');
+            
+            // Random properties
+            const size = Math.random() * 8 + 4;
+            const left = Math.random() * window.innerWidth;
+            const animationDuration = Math.random() * 5 + 5;
+            
+            sakura.style.width = `${size}px`;
+            sakura.style.height = `${size}px`;
+            sakura.style.left = `${left}px`;
+            sakura.style.animationDuration = `${animationDuration}s`;
+            
+            sakuraContainer.appendChild(sakura);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                sakura.remove();
+            }, animationDuration * 1000);
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.character-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.character-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                selectedCharacter = this.dataset.character;
+                initGame();
+            });
+        });
+
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.difficulty-btn').forEach(b => {
+                    b.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                difficulty = parseInt(this.dataset.difficulty);
+                initGame();
+            });
+        });
+
+        document.getElementById('preview-btn').addEventListener('click', function() {
+            isPreviewing = !isPreviewing;
+            this.textContent = isPreviewing ? 'Hide Preview' : 'Preview Image';
+            renderBoard();
+        });
+
+        document.getElementById('shuffle-btn').addEventListener('click', function() {
+            if (!isAnimating) {
+                shuffleBoard();
+                startTimer();
+            }
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', initGame);
+
+        document.getElementById('main-menu-btn').addEventListener('click', function() {
+            window.location.href = "main.html";
+        });
+
+        document.getElementById('play-again-btn').addEventListener('click', function() {
+            victoryScreen.classList.remove('show');
+            initGame();
+        });
+
+        // Initialize on load
+        document.querySelector('.character-option').classList.add('selected');
+        initGame();
+        
+        // Create initial sakura petals
+        for (let i = 0; i < 15; i++) {
+            setTimeout(createSakura, i * 300);
+        }
+    </script>
+</body>
+</html>

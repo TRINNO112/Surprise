@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Challenge</title>
+    <style>
+        @font-face {
+            font-family: 'BloodCrow';
+            src: url('fonts/BloodCrow.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Kareudon';
+            src: url('fonts/Kareudon-lg0Ad.otf') format('opentype');
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #1a1a2e, #16213e);
+            font-family: 'Kareudon', sans-serif;
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-family: 'BloodCrow', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(255, 105, 180, 0.7); }
+            to { text-shadow: 0 0 20px rgba(255, 105, 180, 0.9), 0 0 30px rgba(255, 192, 203, 0.5); }
+        }
+
+        .difficulty-select {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .difficulty-btn.selected {
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            font-weight: bold;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px auto;
+            font-size: 1.1rem;
+            max-width: 500px;
+        }
+
+        .memory-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 0 auto;
+            max-width: 500px;
+        }
+
+        .memory-cell {
+            aspect-ratio: 1/1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memory-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            z-index: 1;
+        }
+
+        .memory-cell.active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .memory-cell.correct {
+            background: rgba(76, 175, 80, 0.5);
+            animation: pulse 0.5s;
+        }
+
+        .memory-cell.incorrect {
+            background: rgba(244, 67, 54, 0.5);
+            animation: shake 0.5s;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: 'Kareudon', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            min-height: 30px;
+        }
+
+        .sakura {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: pink;
+            border-radius: 50% 0 50% 50%;
+            opacity: 0.8;
+            z-index: 1;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        @media (max-width: 500px) {
+            .memory-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sakura petals container -->
+    <div id="sakura-container"></div>
+
+    <div class="container">
+        <h1>🧠 Memory Challenge</h1>
+        
+        <div class="difficulty-select">
+            <button class="difficulty-btn selected" data-difficulty="4">Easy (4×4)</button>
+            <button class="difficulty-btn" data-difficulty="6">Medium (6×6)</button>
+            <button class="difficulty-btn" data-difficulty="8">Hard (8×8)</button>
+        </div>
+        
+        <div class="game-info">
+            <div>Level: <span id="level">1</span></div>
+            <div>Score: <span id="score">0</span></div>
+            <div>Lives: <span id="lives">3</span></div>
+        </div>
+        
+        <div class="message" id="message">Memorize the pattern!</div>
+        
+        <div class="memory-board" id="memory-board"></div>
+        
+        <div class="controls">
+            <button id="start-btn">Start Round</button>
+            <button id="retry-btn" disabled>Retry</button>
+            <button id="main-menu-btn">Main Menu</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Configuration
+        const config = {
+            easy: { size: 4, time: 2000, lives: 3 },
+            medium: { size: 6, time: 1500, lives: 2 },
+            hard: { size: 8, time: 1000, lives: 1 }
+        };
+
+        // Game State
+        let difficulty = 'easy';
+        let level = 1;
+        let score = 0;
+        let lives = 3;
+        let pattern = [];
+        let userInput = [];
+        let isShowingPattern = false;
+        let isAcceptingInput = false;
+        let sakuraInterval;
+
+        // DOM Elements
+        const memoryBoard = document.getElementById('memory-board');
+        const levelElement = document.getElementById('level');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const messageElement = document.getElementById('message');
+        const startBtn = document.getElementById('start-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const mainMenuBtn = document.getElementById('main-menu-btn');
+        const sakuraContainer = document.getElementById('sakura-container');
+
+        // Initialize Game
+        function initGame() {
+            createBoard();
+            resetRound();
+        }
+
+        // Create game board
+        function createBoard() {
+            memoryBoard.innerHTML = '';
+            memoryBoard.style.gridTemplateColumns = `repeat(${config[difficulty].size}, 1fr)`;
+            
+            const totalCells = config[difficulty].size * config[difficulty].size;
+            
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'memory-cell';
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleCellClick);
+                memoryBoard.appendChild(cell);
+            }
+        }
+
+        // Start a new round
+        function startRound() {
+            if (isShowingPattern) return;
+            
+            // Reset state
+            userInput = [];
+            pattern = generatePattern();
+            isShowingPattern = true;
+            isAcceptingInput = false;
+            startBtn.disabled = true;
+            retryBtn.disabled = true;
+            messageElement.textContent = "Memorize the pattern...";
+            
+            // Show the pattern
+            showPattern();
+        }
+
+        // Generate random pattern
+        function generatePattern() {
+            const patternLength = Math.min(level + 2, config[difficulty].size * config[difficulty].size);
+            const pattern = [];
+            const totalCells = config[difficulty].size * config[difficulty].size;
+            
+            while (pattern.length < patternLength) {
+                const randomIndex = Math.floor(Math.random() * totalCells);
+                if (!pattern.includes(randomIndex)) {
+                    pattern.push(randomIndex);
+                }
+            }
+            
+            return pattern;
+        }
+
+        // Display the pattern to memorize
+        function showPattern(index = 0) {
+            if (index >= pattern.length) {
+                // Pattern shown completely
+                setTimeout(() => {
+                    resetBoard();
+                    isShowingPattern = false;
+                    isAcceptingInput = true;
+                    messageElement.textContent = "Repeat the pattern!";
+                }, 500);
+                return;
+            }
+            
+            const cellIndex = pattern[index];
+            const cell = memoryBoard.children[cellIndex];
+            
+            // Highlight cell
+            cell.classList.add('active');
+            
+            // Hide cell after delay
+            setTimeout(() => {
+                cell.classList.remove('active');
+                setTimeout(() => showPattern(index + 1), 200);
+            }, config[difficulty].time);
+        }
+
+        // Reset board to neutral state
+        function resetBoard() {
+            Array.from(memoryBoard.children).forEach(cell => {
+                cell.classList.remove('active', 'correct', 'incorrect');
+            });
+        }
+
+        // Handle cell clicks
+        function handleCellClick(e) {
+            if (!isAcceptingInput || isShowingPattern) return;
+            
+            const cellIndex = parseInt(e.target.dataset.index);
+            const cell = e.target;
+            
+            // Check if cell is already selected
+            if (userInput.includes(cellIndex)) return;
+            
+            // Add to user input
+            userInput.push(cellIndex);
+            cell.classList.add('active');
+            
+            // Check if correct
+            const expectedIndex = pattern[userInput.length - 1];
+            if (cellIndex === expectedIndex) {
+                // Correct
+                setTimeout(() => {
+                    cell.classList.remove('active');
+                    cell.classList.add('correct');
+                }, 300);
+                
+                // Check if pattern complete
+                if (userInput.length === pattern.length) {
+                    isAcceptingInput = false;
+                    setTimeout(roundComplete, 500);
+                }
+            } else {
+                // Incorrect
+                setTimeout(() => {
+                    cell.classList.remove('active');
+                    cell.classList.add('incorrect');
+                    wrongAnswer();
+                }, 300);
+            }
+        }
+
+        // Round completed successfully
+        function roundComplete() {
+            score += level * 10;
+            level++;
+            scoreElement.textContent = score;
+            levelElement.textContent = level;
+            
+            // Show success message
+            messageElement.textContent = "Perfect! Next level...";
+            createConfetti();
+            
+            // Prepare next round
+            setTimeout(() => {
+                resetRound();
+            }, 1500);
+        }
+
+        // Wrong answer
+        function wrongAnswer() {
+            lives--;
+            livesElement.textContent = lives;
+            isAcceptingInput = false;
+            
+            if (lives <= 0) {
+                // Game over
+                messageElement.textContent = `Game Over! Final Score: ${score}`;
+                startBtn.disabled = true;
+                retryBtn.disabled = false;
+                showCorrectPattern();
+            } else {
+                // Try again
+                messageElement.textContent = "Try again!";
+                retryBtn.disabled = false;
+                showCorrectPattern();
+            }
+        }
+
+        // Show correct pattern
+        function showCorrectPattern() {
+            pattern.forEach((cellIndex, i) => {
+                setTimeout(() => {
+                    const cell = memoryBoard.children[cellIndex];
+                    cell.classList.add('correct');
+                    setTimeout(() => cell.classList.remove('correct'), 800);
+                }, i * 300);
+            });
+        }
+
+        // Reset current round
+        function resetRound() {
+            userInput = [];
+            resetBoard();
+            startBtn.disabled = false;
+            retryBtn.disabled = true;
+            messageElement.textContent = "Ready for next round!";
+        }
+
+        // Reset entire game
+        function resetGame() {
+            level = 1;
+            score = 0;
+            lives = config[difficulty].lives;
+            levelElement.textContent = level;
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+            resetRound();
+        }
+
+        // Create sakura petals
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.classList.add('sakura');
+            
+            // Random properties
+            const size = Math.random() * 8 + 4;
+            const left = Math.random() * window.innerWidth;
+            const animationDuration = Math.random() * 5 + 5;
+            
+            sakura.style.width = `${size}px`;
+            sakura.style.height = `${size}px`;
+            sakura.style.left = `${left}px`;
+            sakura.style.animationDuration = `${animationDuration}s`;
+            
+            sakuraContainer.appendChild(sakura);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                sakura.remove();
+            }, animationDuration * 1000);
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#ff5e5e', '#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'];
+            
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: colors
+            });
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.difficulty-btn').forEach(b => {
+                    b.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                difficulty = this.dataset.difficulty === '4' ? 'easy' : 
+                            this.dataset.difficulty === '6' ? 'medium' : 'hard';
+                resetGame();
+                createBoard();
+            });
+        });
+
+        startBtn.addEventListener('click', startRound);
+        retryBtn.addEventListener('click', resetGame);
+        mainMenuBtn.addEventListener('click', () => {
+            window.location.href = "main.html";
+        });
+
+        // Initialize sakura petals
+        function initSakura() {
+            clearInterval(sakuraInterval);
+            sakuraInterval = setInterval(createSakura, 500);
+            
+            // Initial petals
+            for (let i = 0; i < 10; i++) {
+                setTimeout(createSakura, i * 300);
+            }
+        }
+
+        // Initialize game
+        initGame();
+        initSakura();
+    </script>
+</body>
+</html>

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Biology Quiz</title>
+    <style>
+        @font-face {
+            font-family: 'BloodCrow';
+            src: url('fonts/BloodCrow.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Kareudon';
+            src: url('fonts/Kareudon-lg0Ad.otf') format('opentype');
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #1a1a2e, #16213e);
+            font-family: 'Kareudon', sans-serif;
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-family: 'BloodCrow', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(255, 105, 180, 0.7); }
+            to { text-shadow: 0 0 20px rgba(255, 105, 180, 0.9), 0 0 30px rgba(255, 192, 203, 0.5); }
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .option.correct {
+            background: rgba(76, 175, 80, 0.7);
+            border-color: #4CAF50;
+            animation: pulseCorrect 0.5s;
+        }
+
+        .option.wrong {
+            background: rgba(244, 67, 54, 0.7);
+            border-color: #F44336;
+            animation: shake 0.5s;
+        }
+
+        @keyframes pulseCorrect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-3px); }
+            40%, 80% { transform: translateX(3px); }
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff512f, #dd2476);
+            transition: width 0.5s ease;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: 'Kareudon', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            flex: 1;
+            min-width: 120px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result {
+            font-size: 1.4rem;
+            margin: 15px 0;
+            min-height: 40px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .result.show {
+            opacity: 1;
+        }
+
+        .score {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .final-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .final-buttons button {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .sakura {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: pink;
+            border-radius: 50% 0 50% 50%;
+            opacity: 0.8;
+            z-index: 1;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        @media (min-width: 500px) {
+            .options {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .question {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sakura petals container -->
+    <div id="sakura-container"></div>
+
+    <div class="container">
+        <h1>🧬 Biology Quiz Challenge</h1>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="quiz-container">
+            <div class="question" id="question">Loading question...</div>
+            
+            <div class="options" id="options">
+                <!-- Options will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="result" id="result"></div>
+            <div class="score" id="score">Score: 0</div>
+            
+            <div class="controls">
+                <button id="prev-btn" disabled>← Previous</button>
+                <button id="next-btn">Next →</button>
+            </div>
+            
+            <!-- Final buttons (hidden initially) -->
+            <div class="final-buttons" id="final-buttons" style="display: none;">
+                <button id="retry-btn">Retry Quiz</button>
+                <button id="home-btn">Back to Main</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        // Grade 10 Biology Questions
+        const questions = [
+            {
+                question: "Which organelle is known as the powerhouse of the cell?",
+                options: ["Nucleus", "Mitochondria", "Ribosome", "Golgi Apparatus"],
+                answer: 1
+            },
+            {
+                question: "What is the process by which plants make their own food?",
+                options: ["Respiration", "Transpiration", "Photosynthesis", "Digestion"],
+                answer: 2
+            },
+            {
+                question: "Which of these is NOT part of the cell theory?",
+                options: [
+                    "All living things are made of cells",
+                    "Cells come from pre-existing cells",
+                    "Cells are the smallest unit of life",
+                    "All cells have a nucleus"
+                ],
+                answer: 3
+            },
+            {
+                question: "What is the main function of red blood cells?",
+                options: [
+                    "Fight infection",
+                    "Transport oxygen",
+                    "Produce hormones",
+                    "Store energy"
+                ],
+                answer: 1
+            },
+            {
+                question: "Which molecule carries genetic information?",
+                options: ["Protein", "Lipid", "DNA", "Carbohydrate"],
+                answer: 2
+            },
+            {
+                question: "What is the function of the ribosome?",
+                options: [
+                    "Energy production",
+                    "Protein synthesis",
+                    "Cellular digestion",
+                    "Waste removal"
+                ],
+                answer: 1
+            },
+            {
+                question: "Which system transports nutrients throughout the body?",
+                options: [
+                    "Nervous system",
+                    "Circulatory system",
+                    "Respiratory system",
+                    "Digestive system"
+                ],
+                answer: 1
+            },
+            {
+                question: "What is the role of chlorophyll in plants?",
+                options: [
+                    "Absorb water",
+                    "Capture sunlight for photosynthesis",
+                    "Provide structural support",
+                    "Store carbohydrates"
+                ],
+                answer: 1
+            }
+        ];
+
+        // DOM elements
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const resultElement = document.getElementById('result');
+        const scoreElement = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const finalButtons = document.getElementById('final-buttons');
+        const retryBtn = document.getElementById('retry-btn');
+        const homeBtn = document.getElementById('home-btn');
+        const sakuraContainer = document.getElementById('sakura-container');
+
+        // Quiz state
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOption = null;
+        let answered = false;
+
+        // Initialize quiz
+        function loadQuestion() {
+            const question = questions[currentQuestionIndex];
+            questionElement.textContent = question.question;
+            
+            // Clear previous options
+            optionsElement.innerHTML = '';
+            
+            // Add new options
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => selectOption(index));
+                optionsElement.appendChild(optionElement);
+            });
+            
+            // Update progress
+            progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`;
+            
+            // Update buttons
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next';
+            
+            // Reset answer state
+            answered = false;
+            selectedOption = null;
+            resultElement.classList.remove('show');
+            resultElement.textContent = '';
+        }
+
+        // Handle option selection
+        function selectOption(index) {
+            if (answered) return;
+            
+            selectedOption = index;
+            const options = document.querySelectorAll('.option');
+            const question = questions[currentQuestionIndex];
+            
+            // Mark selected option
+            options.forEach(option => option.classList.remove('selected'));
+            options[index].classList.add('selected');
+            
+            // Check answer
+            if (index === question.answer) {
+                resultElement.textContent = 'Correct! 🎉';
+                resultElement.style.color = '#4CAF50';
+                options[index].classList.add('correct');
+                score++;
+                scoreElement.textContent = `Score: ${score}`;
+                
+                // Celebration for correct answer
+                createConfetti();
+            } else {
+                resultElement.textContent = 'Wrong! The correct answer is: ' + question.options[question.answer];
+                resultElement.style.color = '#F44336';
+                options[index].classList.add('wrong');
+                options[question.answer].classList.add('correct');
+            }
+            
+            resultElement.classList.add('show');
+            answered = true;
+        }
+
+        // Navigation functions
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                // Quiz finished
+                showFinalResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        // Show final results
+        function showFinalResults() {
+            const percentage = Math.round((score / questions.length) * 100);
+            let message;
+            
+            if (percentage === 100) {
+                message = `Perfect Score! ${percentage}% 🎂🎉`;
+            } else if (percentage >= 80) {
+                message = `Excellent! ${percentage}% 🎊`;
+            } else if (percentage >= 60) {
+                message = `Good job! ${percentage}% 👍`;
+            } else if (percentage >= 40) {
+                message = `Keep practicing! ${percentage}% 🙂`;
+            } else {
+                message = `Let's try again! ${percentage}% 💪`;
+            }
+            
+            questionElement.textContent = "Quiz Complete!";
+            optionsElement.innerHTML = '';
+            resultElement.textContent = message;
+            resultElement.style.color = '#FFD700';
+            resultElement.classList.add('show');
+            
+            // Hide navigation buttons
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            
+            // Show final buttons
+            finalButtons.style.display = 'flex';
+            
+            // Big celebration
+            createConfetti(true);
+        }
+
+        // Reset quiz
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreElement.textContent = `Score: ${score}`;
+            finalButtons.style.display = 'none';
+            prevBtn.style.display = 'block';
+            nextBtn.style.display = 'block';
+            loadQuestion();
+        }
+
+        // Create confetti effect
+        function createConfetti(isFinal = false) {
+            const duration = isFinal ? 1000 : 500;
+            const end = Date.now() + duration;
+            const colors = ['#ff5e5e', '#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'];
+            
+            (function frame() {
+                confetti({
+                    particleCount: isFinal ? 20 : 10,
+                    angle: 60,
+                    spread: 70,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                
+                confetti({
+                    particleCount: isFinal ? 10 : 10,
+                    angle: 120,
+                    spread: 70,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+                
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        // Create sakura petals
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.classList.add('sakura');
+            
+            // Random properties
+            const size = Math.random() * 8 + 4;
+            const left = Math.random() * window.innerWidth;
+            const animationDuration = Math.random() * 5 + 5;
+            const delay = Math.random() * 5;
+            
+            sakura.style.width = `${size}px`;
+            sakura.style.height = `${size}px`;
+            sakura.style.left = `${left}px`;
+            sakura.style.animationDuration = `${animationDuration}s`;
+            sakura.style.animationDelay = `${delay}s`;
+            
+            sakuraContainer.appendChild(sakura);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                sakura.remove();
+            }, animationDuration * 500);
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', nextQuestion);
+        prevBtn.addEventListener('click', prevQuestion);
+        retryBtn.addEventListener('click', resetQuiz);
+        homeBtn.addEventListener('click', () => {
+            window.location.href = "main.html";
+        });
+
+        // Initialize
+        loadQuestion();
+        
+        // Create sakura petals periodically
+        setInterval(createSakura, 300);
+        
+        // Create initial sakura petals
+        for (let i = 0; i < 15; i++) {
+            setTimeout(createSakura, i * 200);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Adjust any responsive elements if needed
+        });
+    </script>
+</body>
+</html>

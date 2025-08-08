@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Party Intro</title>
+<link rel="preload" href="fonts/BloodCrow.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="fonts/Kareudon-lg0Ad.otf" as="font" type="font/otf" crossorigin>
+<!-- Add confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<style>
+@font-face {
+    font-family: 'BloodCrow';
+    src: url('fonts/BloodCrow.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'Kareudon';
+    src: url('fonts/Kareudon-lg0Ad.otf') format('opentype');
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    color: white;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Centered container */
+.container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+}
+
+/* English Scene 1 */
+#scene1-eng {
+    font-family: 'Kareudon', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 5px;
+    opacity: 0;
+}
+
+/* Japanese Scene 1 */
+#scene1-jp {
+    font-family: 'Kareudon', sans-serif;
+    font-size: 1.5rem;
+    margin-top: 10px;
+    opacity: 0;
+    color: #ffdddd;
+}
+
+/* Scene 2 - Happy Birthday */
+#scene2 {
+    font-family: 'BloodCrow', cursive;
+    font-size: 3rem;
+    background: linear-gradient(90deg, #ff0055, #ffcc00, #00ffcc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    position: relative;
+    z-index: 20;
+}
+
+/* Improved Anime white circle intro */
+.circle-mask {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    animation: circleExpand 2.5s ease-out forwards;
+    box-shadow: 0 0 0 9999px rgba(255,255,255,0.8);
+}
+
+@keyframes circleExpand {
+    0% { 
+        width: 0; 
+        height: 0; 
+        box-shadow: 0 0 0 0 rgba(255,255,255,0.8);
+    }
+    50% { 
+        opacity: 1; 
+        box-shadow: 0 0 0 9999px rgba(255,255,255,0.8);
+    }
+    100% { 
+        width: 300vmax; 
+        height: 300vmax; 
+        opacity: 0; 
+        box-shadow: 0 0 0 0 rgba(255,255,255,0);
+    }
+}
+
+/* Fade in/out effects */
+.fade-in {
+    animation: fadeIn 1.5s forwards;
+}
+.fade-out {
+    animation: fadeOut 1.5s forwards;
+}
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+@keyframes fadeOut {
+    to { opacity: 0; }
+}
+
+/* Enhanced light burst between scenes */
+.light-burst {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%);
+    opacity: 0;
+    z-index: 500;
+    pointer-events: none;
+}
+
+/* Confetti container */
+.confetti-container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 30;
+    overflow: hidden;
+}
+</style>
+</head>
+<body>
+
+<!-- Anime-style intro -->
+<div class="circle-mask"></div>
+<div class="confetti-container" id="confetti-container"></div>
+
+<div class="container">
+    <div id="scene1-eng">A special surprise awaits.</div>
+    <div id="scene1-jp">特別なサプライズが待っています。</div>
+    <div id="scene2">Happy Birthday Akari Tomioka</div>
+</div>
+
+<div class="light-burst" id="light-burst"></div>
+
+<audio id="bg-music" src="music/bgm.mp3" autoplay loop></audio>
+<audio id="whoosh" src="music/whoosh.mp3"></audio>
+
+<script>
+// Typing effect for text
+function typeText(el, text, speed, callback) {
+    let i = 0;
+    el.textContent = "";
+    let timer = setInterval(() => {
+        el.textContent += text.charAt(i);
+        i++;
+        if (i >= text.length) {
+            clearInterval(timer);
+            if (callback) callback();
+        }
+    }, speed);
+}
+
+// Enhanced confetti function
+function launchConfetti() {
+    // Main burst
+    confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        shapes: ['circle', 'heart'],
+        colors: ['#ff5e5e', '#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff']
+    });
+    
+    // Left side
+    confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 },
+        shapes: ['circle', 'star'],
+        colors: ['#ff5e5e', '#ffb3ba', '#ffdfba']
+    });
+    
+    // Right side
+    confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 },
+        shapes: ['circle', 'star'],
+        colors: ['#ffffba', '#baffc9', '#bae1ff']
+    });
+    
+    // Continuous gentle fall
+    const duration = 5000;
+    const end = Date.now() + duration;
+    
+    (function frame() {
+        confetti({
+            particleCount: 5,
+            spread: 100,
+            origin: { y: 0 },
+            shapes: ['circle'],
+            colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff']
+        });
+        
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    })();
+}
+
+window.onload = () => {
+    const scene1Eng = document.getElementById('scene1-eng');
+    const scene1Jp = document.getElementById('scene1-jp');
+    const scene2 = document.getElementById('scene2');
+    const lightBurst = document.getElementById('light-burst');
+    const whooshSound = document.getElementById('whoosh');
+    const bgMusic = document.getElementById('bg-music');
+
+    // Play whoosh at start
+    whooshSound.play();
+
+    // Scene 1 (typing effect)
+    setTimeout(() => {
+        scene1Eng.classList.add('fade-in');
+        typeText(scene1Eng, "A special surprise awaits.", 80, () => {
+            setTimeout(() => {
+                scene1Jp.classList.add('fade-in');
+                scene1Jp.textContent = "特別なサプライズが待っています。";
+            }, 500);
+        });
+    }, 2500);
+
+    // Switch to Scene 2
+    setTimeout(() => {
+        scene1Eng.classList.add('fade-out');
+        scene1Jp.classList.add('fade-out');
+
+        setTimeout(() => {
+            // Light burst transition
+            lightBurst.style.opacity = "1";
+            setTimeout(() => { lightBurst.style.opacity = "0"; }, 800);
+
+            // Play background music
+            bgMusic.play();
+
+            // Show birthday message
+            scene2.classList.add('fade-in');
+
+            // Launch enhanced confetti
+            launchConfetti();
+
+        }, 1200);
+    }, 7000);
+
+    // Redirect after ~16s
+    setTimeout(() => {
+        document.body.classList.add('fade-out');
+        setTimeout(() => {
+            window.location.href = "main.html";
+        }, 1500);
+    }, 16000);
+};
+</script>
+</body>
+</html>

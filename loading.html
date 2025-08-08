@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading Surprise...</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Noto+Sans+JP:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(270deg, #43cea2, #185a9d, #ff512f, #dd2476);
+      background-size: 800% 800%;
+      animation: gradientMove 10s ease infinite;
+      color: white;
+      text-align: center;
+      position: relative;
+      flex-direction: column;
+    }
+
+    /* Floating particles */
+    .particle {
+      position: absolute;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      animation: float 6s infinite ease-in-out;
+    }
+
+    /* Loading text */
+    .loading-text {
+      font-size: 1.8rem;
+      font-weight: 600;
+      animation: pulse 1.5s infinite ease-in-out;
+      min-height: 2.5rem;
+    }
+
+    /* Progress bar container */
+    .progress-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 15px;
+      gap: 10px;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      flex: 1;
+      max-width: 400px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #FFD700, #FFA500, #FF4500);
+      background-size: 300% 300%;
+      animation: gradientShift 2s linear infinite;
+    }
+
+    /* Percentage text */
+    .progress-percent {
+      font-size: 1rem;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    /* Demon Slayer Names Animation */
+    .anime-names {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 1.1rem;
+      opacity: 0.85;
+      margin-top: auto;
+      padding-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: center;
+    }
+    .anime-name {
+      opacity: 0;
+    }
+
+    @keyframes fadeInName {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOutName {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    /* Keyframes */
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating particles -->
+  <div class="particle" style="width:10px; height:10px; top:20%; left:15%; animation-delay: 0s;"></div>
+  <div class="particle" style="width:15px; height:15px; top:40%; left:70%; animation-delay: 1s;"></div>
+  <div class="particle" style="width:8px; height:8px; top:60%; left:30%; animation-delay: 2s;"></div>
+  <div class="particle" style="width:12px; height:12px; top:80%; left:50%; animation-delay: 3s;"></div>
+  <div class="particle" style="width:14px; height:14px; top:25%; left:80%; animation-delay: 0.5s;"></div>
+
+  <!-- Loading content -->
+  <div class="loading-screen">
+    <p class="loading-text" id="loadingMessage">Loading your surprise...</p>
+    <div class="progress-wrapper">
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-percent" id="progressPercent">0%</span>
+    </div>
+  </div>
+
+  <!-- Demon Slayer Japanese names (Katakana + Hiragana mix) -->
+  <div class="anime-names" id="animeNames">
+    <span class="anime-name">かまど タンジロウ</span>
+    <span class="anime-name">あがつま ゼンイツ</span>
+    <span class="anime-name">はしびら イノスケ</span>
+    <span class="anime-name">ときとう ムイチロウ</span>
+    <span class="anime-name">こちょう シノブ</span>
+    <span class="anime-name">れんごく キョウジュロウ</span>
+  </div>
+
+  <script>
+    let progress = 0;
+    let progressFill = document.querySelector(".progress-fill");
+    let progressPercent = document.getElementById("progressPercent");
+    let messageElement = document.getElementById("loadingMessage");
+    let animeNames = document.querySelectorAll(".anime-name");
+
+    const messages = [
+      "Loading your surprise...",
+      "Preparing something special...",
+      "Almost ready...",
+      "Here we go!"
+    ];
+    let messageIndex = 0;
+
+    // Change loading messages
+    setInterval(() => {
+      messageIndex = (messageIndex + 1) % messages.length;
+      messageElement.textContent = messages[messageIndex];
+    }, 2500);
+
+    let nameIndex = 0;
+
+    let loadingInterval = setInterval(() => {
+      progress += 1;
+      if (progress > 100) progress = 100;
+
+      progressFill.style.width = `${progress}%`;
+      progressPercent.textContent = `${progress}%`;
+
+      // Show names slower
+      if (progress % 16 === 0 && nameIndex < animeNames.length) {
+        animeNames[nameIndex].style.animation = `fadeInName 1.5s forwards`;
+        nameIndex++;
+      }
+
+      // Fade out names when nearing completion
+      if (progress >= 95) {
+        animeNames.forEach((name, i) => {
+          setTimeout(() => {
+            name.style.animation = `fadeOutName 1.5s forwards`;
+          }, i * 200);
+        });
+      }
+
+      if (progress >= 100) {
+        clearInterval(loadingInterval);
+        setTimeout(() => {
+          window.location.href = "party.html";
+        }, 1800);
+      }
+    }, 120);
+  </script>
+</body>
+</html>
