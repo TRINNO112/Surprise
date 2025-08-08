@@ -118,6 +118,55 @@
       50% { transform: translateY(-20px) rotate(180deg); }
       100% { transform: translateY(0) rotate(360deg); }
     }
+    /* Responsive tweaks for smaller screens */
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem;
+          overflow: auto; /* allow scrolling if needed */
+        }
+
+        .main-text, .main-text-english {
+          font-size: 2.2rem;       /* smaller font size */
+          letter-spacing: 2px;     /* reduce spacing */
+          white-space: normal;     /* allow wrapping */
+          width: 100% !important;  /* ensure full width for typing animation */
+        }
+
+        .sub-text {
+          font-size: 1rem;
+          margin-top: 8px;
+        }
+
+        .modern-btn {
+          padding: 12px 24px;
+          font-size: 1rem;
+          border-radius: 20px;
+        }
+
+        /* Scale down or hide some floating shapes on small screens */
+        .shape {
+          display: none;
+        }
+
+        /* Center intro screen text and add some margin */
+        .intro-screen {
+          padding: 0 1rem;
+          max-width: 100%;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .main-text, .main-text-english {
+          font-size: 1.6rem;
+          letter-spacing: 1.5px;
+        }
+
+        .modern-btn {
+          padding: 10px 20px;
+          font-size: 0.9rem;
+        }
+      }
+
   </style>
 </head>
 <body>
