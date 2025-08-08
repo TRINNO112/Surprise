@@ -46,12 +46,12 @@
     .main-text {
       font-family: 'BloodCrow', sans-serif;
       font-size: 3.5rem;
-      white-space: nowrap;
+      white-space: normal;           /* allow wrapping */
       overflow: hidden;
       border-right: 3px solid rgba(255,255,255,0.75);
-      width: 0;
+      max-width: 20ch;               /* limit max width to ~20 characters */
       opacity: 1;
-      letter-spacing: 4px; /* more spacing between characters */
+      letter-spacing: 4px;           /* spacing between characters */
       animation: typingJP 5.5s steps(25) forwards, blink 0.75s step-end infinite;
     }
 
